@@ -1,0 +1,9 @@
+# Theos Stuff
+.theos
+theos/
+obj/
+*.deb
+_/
+
+# Mac Stuff
+.DS_Store
