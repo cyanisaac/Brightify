@@ -20,22 +20,71 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 + (UIColor*)glue_colorFromHexString:(NSString*)arg1 alpha:(double)arg2;
 @end
 
+@interface SPTTheme
+- resolveColorForKey:(NSString*)arg1;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyantycdev.whiteify.bundle"
 
 static NSDictionary* colorOverrideDictionary;
+static NSDictionary* defaultColorsDictionary;
 
 %ctor {
-  NSBundle* tweakBundle = [[[NSBundle alloc] initWithPath:kBundlePath] autorelease];
+  NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
   colorOverrideDictionary = [[NSDictionary alloc] initWithContentsOfFile:[tweakBundle pathForResource:@"ColorOverrides" ofType:@"plist"]];
 }
 
 %hook SPTTheme
+
 -(UIColor*)resolveColorForKey:(NSString*)arg1 {
+
+  if(defaultColorsDictionary == nil) {
+    NSBundle* spotifyBundle = [NSBundle mainBundle];
+    NSString* pathForResource = [spotifyBundle pathForResource:@"Theme" ofType:@"plist"];
+    NSDictionary* spotifyThemeDict = [NSDictionary dictionaryWithContentsOfFile:pathForResource];
+    NSDictionary* spotifyColorsDict = [NSDictionary dictionaryWithDictionary:[spotifyThemeDict objectForKey:@"colors"]];
+    defaultColorsDictionary = spotifyColorsDict;
+  }
+
+  // Thanks Spotify for the fucking awful plist with tons of different ways of
+  // storing color values, now I have to go complicate my tweak to deal with it.
   NSString* possibleColorString = [colorOverrideDictionary objectForKey:arg1];
   if(possibleColorString != nil) {
-    return [UIColor glue_colorFromHexString:possibleColorString alpha:1.0];
+    return [UIColor glue_colorFromHexString:possibleColorString alpha:1.0]; // Fix alpha issue later.
   } else {
-    return %orig;
+    // Later iPad colors should be supported, for now, we only use iPhone colors.
+    // Apologies to iPad users, I don't have a device for testing and don't care
+    // to implement it but if someone else wants to they can go ahead.
+
+    NSDictionary* possibleRecursiveColorDict = [defaultColorsDictionary objectForKey:arg1];
+    if(possibleRecursiveColorDict != nil) {
+      NSString* foundColorString;
+
+      id recursiveColorValue = [possibleRecursiveColorDict objectForKey:@""];
+      if ([recursiveColorValue isKindOfClass:[NSString class]]) {
+        foundColorString = [[NSString alloc] initWithString:recursiveColorValue];
+      } else if ([recursiveColorValue isKindOfClass:[NSDictionary class]]) {
+        NSDictionary* colorWithAlphaDict = [NSDictionary dictionaryWithDictionary:recursiveColorValue];
+        if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
+          return [UIColor glue_colorFromHexString:possibleColorString alpha:1.0]; // Fix alpha later.
+        } else if ([colorWithAlphaDict objectForKey:@"base"] != nil) {
+          foundColorString = [[NSString alloc] initWithString:[colorWithAlphaDict objectForKey:@"base"]];
+        } else {
+          return %orig;
+        }
+      } else {
+        return %orig;
+      }
+
+      if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
+        return [self resolveColorForKey:foundColorString];
+      } else {
+        return %orig;
+      }
+    } else {
+      return %orig;
+    }
   }
 }
+
 %end
