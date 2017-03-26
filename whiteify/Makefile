@@ -1,3 +1,6 @@
+CFLAGS = -Wno-unused-variable
+Whiteify_CFLAGS = -fobjc-arc
+
 include $(THEOS)/makefiles/common.mk
 
 TWEAK_NAME = Whiteify
