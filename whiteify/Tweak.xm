@@ -18,6 +18,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 @interface UIColor (GLUEHex)
 + (UIColor*)glue_colorFromHexString:(NSString*)arg1 alpha:(double)arg2;
+
 @end
 
 @interface SPTTheme
@@ -28,6 +29,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
+static float currentColorAlpha;
 
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -77,13 +79,21 @@ static NSDictionary* defaultColorsDictionary;
       }
 
       if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
-        return [self resolveColorForKey:foundColorString];
+        UIColor* resolvedColor = [self resolveColorForKey:foundColorString];
+        // this next line causes the problem
+        if(resolvedColor == nil) {
+          %log(@"PAYATTENTIONGREP")
+          %log(@"MOTHERFUCKER!")
+          return %orig;
+        }
+        return resolvedColor;
       } else {
         return %orig;
       }
     } else {
       return %orig;
     }
+    return %orig;
   }
 }
 
