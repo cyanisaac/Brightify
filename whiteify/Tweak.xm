@@ -52,7 +52,9 @@ static float currentColorAlpha;
   // storing color values, now I have to go complicate my tweak to deal with it.
   NSString* possibleColorString = [colorOverrideDictionary objectForKey:arg1];
   if(possibleColorString != nil) {
-    return [UIColor glue_colorFromHexString:possibleColorString alpha:1.0]; // Fix alpha issue later.
+    float foundAlpha = currentColorAlpha;
+    currentColorAlpha = 1.0;
+    return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha issue later.
   } else {
     // Later iPad colors should be supported, for now, we only use iPhone colors.
     // Apologies to iPad users, I don't have a device for testing and don't care
@@ -67,8 +69,17 @@ static float currentColorAlpha;
         foundColorString = [[NSString alloc] initWithString:recursiveColorValue];
       } else if ([recursiveColorValue isKindOfClass:[NSDictionary class]]) {
         NSDictionary* colorWithAlphaDict = [NSDictionary dictionaryWithDictionary:recursiveColorValue];
+        NSNumber* foundAlphaInDictionary = [colorWithAlphaDict objectForKey:@"alpha"];
+        if(foundAlphaInDictionary == nil) {
+          currentColorAlpha = 1.0;
+        } else {
+          currentColorAlpha = [foundAlphaInDictionary floatValue];
+          
+        }
         if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
-          return [UIColor glue_colorFromHexString:possibleColorString alpha:1.0]; // Fix alpha later.
+          float foundAlpha = currentColorAlpha;
+          currentColorAlpha = 1.0;
+          return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha later.
         } else if ([colorWithAlphaDict objectForKey:@"base"] != nil) {
           foundColorString = [[NSString alloc] initWithString:[colorWithAlphaDict objectForKey:@"base"]];
         } else {
@@ -82,8 +93,6 @@ static float currentColorAlpha;
         UIColor* resolvedColor = [self resolveColorForKey:foundColorString];
         // this next line causes the problem
         if(resolvedColor == nil) {
-          %log(@"PAYATTENTIONGREP")
-          %log(@"MOTHERFUCKER!")
           return %orig;
         }
         return resolvedColor;
