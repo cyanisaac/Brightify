@@ -118,3 +118,11 @@ static float currentColorAlpha;
 }
 
 %end
+
+%hook UIApplication
+
+-(void)setStatusBarStyle:(long long)arg1 {
+  %orig(UIStatusBarStyleDefault);
+}
+
+%end
