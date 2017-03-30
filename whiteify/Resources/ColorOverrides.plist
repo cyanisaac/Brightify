@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>actionButtonLabelColor</key>
+	<string>#FFFFFF</string>
+	<key>actionButtonPrimaryTitleColor</key>
+	<string>#FFFFFF</string>
 	<key>glueBackgroundColor</key>
 	<string>#FFFFFF</string>
 	<key>glueBlack02Color</key>
@@ -39,10 +43,26 @@
 </string>
 	<key>glueGray8Color</key>
 	<string>#FFFFFF</string>
+	<key>glueGray90Color</key>
+	<string>#201F19
+</string>
+	<key>glueGray95Color</key>
+	<string>#14120D
+</string>
+	<key>glueInactiveColor</key>
+	<string>#A7A7A7
+</string>
 	<key>glueLayerColor</key>
 	<string>#D7D7D7
 </string>
+	<key>glueSecondaryColor</key>
+	<string>#5F5F5F
+</string>
 	<key>glueWhiteColor</key>
 	<string>#000000</string>
+	<key>nowPlayingBarBackgroundColor</key>
+	<string>#FFFFFF</string>
+	<key>tabBarTintColor</key>
+	<string>#FFFFFF</string>
 </dict>
 </plist>
