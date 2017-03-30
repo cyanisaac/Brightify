@@ -62,6 +62,10 @@
 	<string>#000000</string>
 	<key>nowPlayingBarBackgroundColor</key>
 	<string>#FFFFFF</string>
+	<key>switchThumbTintColor</key>
+	<string>#FFFFFF</string>
+	<key>switchTintColor</key>
+	<string>#FFFFFF</string>
 	<key>tabBarTintColor</key>
 	<string>#FFFFFF</string>
 </dict>
