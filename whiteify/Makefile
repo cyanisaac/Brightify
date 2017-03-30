@@ -1,5 +1,6 @@
 CFLAGS = -Wno-unused-variable
 Whiteify_CFLAGS = -fobjc-arc
+SYSROOT = $(THEOS)/sdks/iPhoneOS10.1.sdk
 
 include $(THEOS)/makefiles/common.mk
 
