@@ -21,6 +21,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 @end
 
+@interface SPDarkNavigationBar : UINavigationBar
+@end
+
 @interface SPTTheme
 - resolveColorForKey:(NSString*)arg1;
 @end
@@ -74,7 +77,7 @@ static float currentColorAlpha;
           currentColorAlpha = 1.0;
         } else {
           currentColorAlpha = [foundAlphaInDictionary floatValue];
-          
+
         }
         if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
           float foundAlpha = currentColorAlpha;
@@ -104,6 +107,14 @@ static float currentColorAlpha;
     }
     return %orig;
   }
+}
+
+%end
+
+%hook UIBlurEffect
+
++(id)effectWithStyle:(long long)arg1 {
+  return %orig(UIBlurEffectStyleLight);
 }
 
 %end
