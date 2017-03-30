@@ -2,7 +2,47 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>primaryBackgroundColor</key>
-	<string>#ffffff</string>
+	<key>glueBackgroundColor</key>
+	<string>#FFFFFF</string>
+	<key>glueBlack02Color</key>
+	<string>#D9DEDE
+#D9DEDE
+#D9DEDE</string>
+	<key>glueBlack04Color</key>
+	<string>#CBCFCF</string>
+	<key>glueBlack06Color</key>
+	<string>#BDC1C1
+#BDC1C1
+#BDC1C1
+#BDC1C1
+</string>
+	<key>glueBlackColor</key>
+	<string>#FFFFFF</string>
+	<key>glueGray12Color</key>
+	<string>#E3E3E0</string>
+	<key>glueGray15Color</key>
+	<string>#DDDCD9</string>
+	<key>glueGray20Color</key>
+	<string>#D1D0CC</string>
+	<key>glueGray25Color</key>
+	<string>#C1C1BF
+#C1C1BF
+</string>
+	<key>glueGray55Color</key>
+	<string>#777673
+</string>
+	<key>glueGray70Color</key>
+	<string>#52514C
+</string>
+	<key>glueGray80Color</key>
+	<string>#393833
+</string>
+	<key>glueGray8Color</key>
+	<string>#FFFFFF</string>
+	<key>glueLayerColor</key>
+	<string>#D7D7D7
+</string>
+	<key>glueWhiteColor</key>
+	<string>#000000</string>
 </dict>
 </plist>
