@@ -29,82 +29,118 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @end
 
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyantycdev.whiteify.bundle"
+#define kNoctisAppID CFSTR("com.laughingquoll.noctis")
+#define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
 
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
+static BOOL doColorSpotify = true;
 static float currentColorAlpha;
 
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
   colorOverrideDictionary = [[NSDictionary alloc] initWithContentsOfFile:[tweakBundle pathForResource:@"ColorOverrides" ofType:@"plist"]];
+
+  // Noctis support, thanks to Sticktron's DarkMessages for giving an example on
+  // how to do this :).
+  if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Noctis.dylib"]) {
+    CFPreferencesAppSynchronize(kNoctisAppID);
+  	Boolean valid = NO;
+  	BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
+  	if (valid) {
+  		doColorSpotify = !noctisEnabled;
+  	}
+
+    [[NSNotificationCenter defaultCenter]
+      addObserverForName:@"com.laughingquoll.noctis.enablenotification"
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification *note) {
+        doColorSpotify = NO;
+        system("killall -9 Spotify");
+      }];
+
+    [[NSNotificationCenter defaultCenter]
+      addObserverForName:@"com.laughingquoll.noctis.disablenotification"
+      object:nil
+      queue:[NSOperationQueue mainQueue]
+      usingBlock:^(NSNotification *note) {
+        doColorSpotify = YES;
+        system("killall -9 Spotify");
+      }];
+  }
 }
 
 %hook SPTTheme
 
 -(UIColor*)resolveColorForKey:(NSString*)arg1 {
 
-  if(defaultColorsDictionary == nil) {
-    NSBundle* spotifyBundle = [NSBundle mainBundle];
-    NSString* pathForResource = [spotifyBundle pathForResource:@"Theme" ofType:@"plist"];
-    NSDictionary* spotifyThemeDict = [NSDictionary dictionaryWithContentsOfFile:pathForResource];
-    NSDictionary* spotifyColorsDict = [NSDictionary dictionaryWithDictionary:[spotifyThemeDict objectForKey:@"colors"]];
-    defaultColorsDictionary = spotifyColorsDict;
-  }
+if(doColorSpotify) {
+    if(defaultColorsDictionary == nil) {
+      NSBundle* spotifyBundle = [NSBundle mainBundle];
+      NSString* pathForResource = [spotifyBundle pathForResource:@"Theme" ofType:@"plist"];
+      NSDictionary* spotifyThemeDict = [NSDictionary dictionaryWithContentsOfFile:pathForResource];
+      NSDictionary* spotifyColorsDict = [NSDictionary dictionaryWithDictionary:[spotifyThemeDict objectForKey:@"colors"]];
+      defaultColorsDictionary = spotifyColorsDict;
+    }
 
-  // Thanks Spotify for the fucking awful plist with tons of different ways of
-  // storing color values, now I have to go complicate my tweak to deal with it.
-  NSString* possibleColorString = [colorOverrideDictionary objectForKey:arg1];
-  if(possibleColorString != nil) {
-    float foundAlpha = currentColorAlpha;
-    currentColorAlpha = 1.0;
-    return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha issue later.
-  } else {
-    // Later iPad colors should be supported, for now, we only use iPhone colors.
-    // Apologies to iPad users, I don't have a device for testing and don't care
-    // to implement it but if someone else wants to they can go ahead.
-
-    NSDictionary* possibleRecursiveColorDict = [defaultColorsDictionary objectForKey:arg1];
-    if(possibleRecursiveColorDict != nil) {
-      NSString* foundColorString;
-
-      id recursiveColorValue = [possibleRecursiveColorDict objectForKey:@""];
-      if ([recursiveColorValue isKindOfClass:[NSString class]]) {
-        foundColorString = [[NSString alloc] initWithString:recursiveColorValue];
-      } else if ([recursiveColorValue isKindOfClass:[NSDictionary class]]) {
-        NSDictionary* colorWithAlphaDict = [NSDictionary dictionaryWithDictionary:recursiveColorValue];
-        NSNumber* foundAlphaInDictionary = [colorWithAlphaDict objectForKey:@"alpha"];
-        if(foundAlphaInDictionary == nil) {
-          currentColorAlpha = 1.0;
-        } else {
-          currentColorAlpha = [foundAlphaInDictionary floatValue];
-
-        }
-        if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
-          float foundAlpha = currentColorAlpha;
-          currentColorAlpha = 1.0;
-          return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha later.
-        } else if ([colorWithAlphaDict objectForKey:@"base"] != nil) {
-          foundColorString = [[NSString alloc] initWithString:[colorWithAlphaDict objectForKey:@"base"]];
-        } else {
-          return %orig;
-        }
-      } else {
-        return %orig;
-      }
-
-      if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
-        UIColor* resolvedColor = [self resolveColorForKey:foundColorString];
-        // this next line causes the problem
-        if(resolvedColor == nil) {
-          return %orig;
-        }
-        return resolvedColor;
-      } else {
-        return %orig;
-      }
+    // Thanks Spotify for the fucking awful plist with tons of different ways of
+    // storing color values, now I have to go complicate my tweak to deal with it.
+    NSString* possibleColorString = [colorOverrideDictionary objectForKey:arg1];
+    if(possibleColorString != nil) {
+      float foundAlpha = currentColorAlpha;
+      currentColorAlpha = 1.0;
+      return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha issue later.
     } else {
+      // Later iPad colors should be supported, for now, we only use iPhone colors.
+      // Apologies to iPad users, I don't have a device for testing and don't care
+      // to implement it but if someone else wants to they can go ahead.
+
+      NSDictionary* possibleRecursiveColorDict = [defaultColorsDictionary objectForKey:arg1];
+      if(possibleRecursiveColorDict != nil) {
+        NSString* foundColorString;
+
+        id recursiveColorValue = [possibleRecursiveColorDict objectForKey:@""];
+        if ([recursiveColorValue isKindOfClass:[NSString class]]) {
+          foundColorString = [[NSString alloc] initWithString:recursiveColorValue];
+        } else if ([recursiveColorValue isKindOfClass:[NSDictionary class]]) {
+          NSDictionary* colorWithAlphaDict = [NSDictionary dictionaryWithDictionary:recursiveColorValue];
+          NSNumber* foundAlphaInDictionary = [colorWithAlphaDict objectForKey:@"alpha"];
+          if(foundAlphaInDictionary == nil) {
+            currentColorAlpha = 1.0;
+          } else {
+            currentColorAlpha = [foundAlphaInDictionary floatValue];
+
+          }
+          if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
+            float foundAlpha = currentColorAlpha;
+            currentColorAlpha = 1.0;
+            return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha later.
+          } else if ([colorWithAlphaDict objectForKey:@"base"] != nil) {
+            foundColorString = [[NSString alloc] initWithString:[colorWithAlphaDict objectForKey:@"base"]];
+          } else {
+            return %orig;
+          }
+        } else {
+          return %orig;
+        }
+
+        if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
+          UIColor* resolvedColor = [self resolveColorForKey:foundColorString];
+          // this next line causes the problem
+          if(resolvedColor == nil) {
+            return %orig;
+          }
+          return resolvedColor;
+        } else {
+          return %orig;
+        }
+      } else {
+        return %orig;
+      }
       return %orig;
     }
+  } else {
     return %orig;
   }
 }
@@ -114,7 +150,11 @@ static float currentColorAlpha;
 %hook UIBlurEffect
 
 +(id)effectWithStyle:(long long)arg1 {
-  return %orig(UIBlurEffectStyleLight);
+  if(doColorSpotify) {
+    return %orig(UIBlurEffectStyleLight);
+  } else {
+    return %orig;
+  }
 }
 
 %end
@@ -122,7 +162,11 @@ static float currentColorAlpha;
 %hook UIApplication
 
 -(void)setStatusBarStyle:(long long)arg1 {
-  %orig(UIStatusBarStyleDefault);
+  if(doColorSpotify) {
+    %orig(UIStatusBarStyleDefault);
+  } else {
+    %orig;
+  }
 }
 
 %end
