@@ -170,3 +170,19 @@ if(doColorSpotify) {
 }
 
 %end
+
+%hook UIView
+
+-(void)setHidden:(BOOL)hidden {
+  if(doColorSpotify) {
+    if(![self.superview isKindOfClass:[%c(SPTEntityStickyHeaderView) class]] && self.bounds.size.height != 22) {
+      %orig;
+    } else {
+      %orig(true);
+    }
+  } else {
+    %orig;
+  }
+}
+
+%end
