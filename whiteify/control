@@ -1,9 +1,0 @@
-Package: com.cyantycdev.whiteify
-Name: Whiteify
-Depends: mobilesubstrate
-Version: 0.0.1
-Architecture: iphoneos-arm
-Description: An awesome MobileSubstrate tweak!
-Maintainer: CyantycDev
-Author: CyantycDev
-Section: Tweaks

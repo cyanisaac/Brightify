@@ -1,5 +1,5 @@
 /*
-Tweak file for Whiteify, containing recolouring logic.
+Tweak file for Brightify, containing recolouring logic.
 Copyright (c) 2017 Isaac Trimble-Pederson, All Rights Reserved.
 
 This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 - resolveColorForKey:(NSString*)arg1;
 @end
 
-#define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyantycdev.whiteify.bundle"
+#define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
 

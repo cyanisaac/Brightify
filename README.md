@@ -1,1 +1,1 @@
-Whiteify
+Brightify
