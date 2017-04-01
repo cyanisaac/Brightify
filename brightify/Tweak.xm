@@ -35,7 +35,91 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
 static BOOL doColorSpotify = true;
-static float currentColorAlpha;
+static float currentColorAlpha = 1.0;
+static int recursionDepth = 0;
+
+@interface BTFYReturnValuePair: NSObject
+@property(nonatomic) NSString* hexColorString;
+@property(nonatomic) NSNumber* alpha;
+-(id)initWithColorString:(NSString*)hexColorString alpha:(NSNumber*)alpha;
+@end
+
+@implementation BTFYReturnValuePair
+-(id)initWithColorString:(NSString*)hexColorString alpha:(NSNumber*)alpha {
+  self = [super init];
+  self.hexColorString = hexColorString;
+  self.alpha = alpha;
+
+  return self;
+}
+@end
+
+@interface BTFYMethods: NSObject
++(BTFYReturnValuePair*)getValuesForKey:(NSString*)colorKey;
+@end
+
+@implementation BTFYMethods
+
++(BTFYReturnValuePair*)getValuesForKey:(NSString*)colorKey {
+  NSString* foundHexColor;
+  NSString* workingColorKey = colorKey;
+  NSMutableArray* foundAlphaValues = [[NSMutableArray alloc] init];
+  while(foundHexColor == nil) {
+    if([colorOverrideDictionary objectForKey:workingColorKey]) {
+      foundHexColor = [colorOverrideDictionary objectForKey:workingColorKey];
+    }
+    NSDictionary* dictForColor = [defaultColorsDictionary objectForKey:workingColorKey];
+    if(dictForColor != nil) {
+      id foundColorValue = [dictForColor objectForKey:@""]; // iPad not supported. Will fix in later version.
+      if ([foundColorValue isKindOfClass:[NSString class]]) {
+        NSString* foundColorString = foundColorValue;
+        if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
+          workingColorKey = foundColorString;
+        } else {
+          if(foundHexColor == nil) {
+            foundHexColor = foundColorString;
+          }
+        }
+      } else if([foundColorValue isKindOfClass:[NSDictionary class]]) {
+        NSDictionary* foundColorDictionary = foundColorValue;
+        if([foundColorDictionary objectForKey:@"rgb"] != nil) {
+          if(foundHexColor == nil) {
+            foundHexColor = [foundColorDictionary objectForKey:@"rgb"];
+          }
+        } else if([foundColorDictionary objectForKey:@"base"] != nil) {
+          workingColorKey = [foundColorDictionary objectForKey:@"base"];
+        }
+        if([foundColorDictionary objectForKey:@"alpha"] != nil) {
+          [foundAlphaValues addObject:[foundColorDictionary objectForKey:@"alpha"]];
+        }
+      } else {
+        // fuck you iPad
+        break;
+      }
+    } else {
+      // Spotify looking for nonexistent colors, maybe?
+      break;
+    }
+  }
+
+  NSNumber* finalAlpha;
+  if([foundAlphaValues lastObject] != nil) {
+    finalAlpha = [foundAlphaValues lastObject];
+  } else {
+    finalAlpha = [NSNumber numberWithFloat:1.0];
+  }
+
+  BTFYReturnValuePair* valuePair = [[BTFYReturnValuePair alloc] initWithColorString:foundHexColor alpha:finalAlpha];
+  if(valuePair.hexColorString != nil && valuePair.alpha != nil) {
+    return valuePair;
+  } else {
+    return nil;
+  }
+}
+
+@end
+
+
 
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -74,8 +158,7 @@ static float currentColorAlpha;
 %hook SPTTheme
 
 -(UIColor*)resolveColorForKey:(NSString*)arg1 {
-
-if(doColorSpotify) {
+  if(doColorSpotify) {
     if(defaultColorsDictionary == nil) {
       NSBundle* spotifyBundle = [NSBundle mainBundle];
       NSString* pathForResource = [spotifyBundle pathForResource:@"Theme" ofType:@"plist"];
@@ -84,65 +167,13 @@ if(doColorSpotify) {
       defaultColorsDictionary = spotifyColorsDict;
     }
 
-    // Thanks Spotify for the fucking awful plist with tons of different ways of
-    // storing color values, now I have to go complicate my tweak to deal with it.
-    NSString* possibleColorString = [colorOverrideDictionary objectForKey:arg1];
-    if(possibleColorString != nil) {
-      float foundAlpha = currentColorAlpha;
-      currentColorAlpha = 1.0;
-      return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha issue later.
-    } else {
-      // Later iPad colors should be supported, for now, we only use iPhone colors.
-      // Apologies to iPad users, I don't have a device for testing and don't care
-      // to implement it but if someone else wants to they can go ahead.
-
-      NSDictionary* possibleRecursiveColorDict = [defaultColorsDictionary objectForKey:arg1];
-      if(possibleRecursiveColorDict != nil) {
-        NSString* foundColorString;
-
-        id recursiveColorValue = [possibleRecursiveColorDict objectForKey:@""];
-        if ([recursiveColorValue isKindOfClass:[NSString class]]) {
-          foundColorString = [[NSString alloc] initWithString:recursiveColorValue];
-        } else if ([recursiveColorValue isKindOfClass:[NSDictionary class]]) {
-          NSDictionary* colorWithAlphaDict = [NSDictionary dictionaryWithDictionary:recursiveColorValue];
-          NSNumber* foundAlphaInDictionary = [colorWithAlphaDict objectForKey:@"alpha"];
-          if(foundAlphaInDictionary == nil) {
-            currentColorAlpha = 1.0;
-          } else {
-            currentColorAlpha = [foundAlphaInDictionary floatValue];
-
-          }
-          if ([colorWithAlphaDict objectForKey:@"rgb"] != nil) {
-            float foundAlpha = currentColorAlpha;
-            currentColorAlpha = 1.0;
-            return [UIColor glue_colorFromHexString:possibleColorString alpha:foundAlpha]; // Fix alpha later.
-          } else if ([colorWithAlphaDict objectForKey:@"base"] != nil) {
-            foundColorString = [[NSString alloc] initWithString:[colorWithAlphaDict objectForKey:@"base"]];
-          } else {
-            return %orig;
-          }
-        } else {
-          return %orig;
-        }
-
-        if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
-          UIColor* resolvedColor = [self resolveColorForKey:foundColorString];
-          // this next line causes the problem
-          if(resolvedColor == nil) {
-            return %orig;
-          }
-          return resolvedColor;
-        } else {
-          return %orig;
-        }
-      } else {
-        return %orig;
-      }
-      return %orig;
+    BTFYReturnValuePair* values = [BTFYMethods getValuesForKey:arg1];
+    if(values != nil) {
+      return [UIColor glue_colorFromHexString:values.hexColorString alpha:[values.alpha floatValue]];
     }
-  } else {
-    return %orig;
   }
+
+  return %orig;
 }
 
 %end
@@ -164,22 +195,6 @@ if(doColorSpotify) {
 -(void)setStatusBarStyle:(long long)arg1 {
   if(doColorSpotify) {
     %orig(UIStatusBarStyleDefault);
-  } else {
-    %orig;
-  }
-}
-
-%end
-
-%hook UIView
-
--(void)setHidden:(BOOL)hidden {
-  if(doColorSpotify) {
-    if(![self.superview isKindOfClass:[%c(SPTEntityStickyHeaderView) class]] && self.bounds.size.height != 22) {
-      %orig;
-    } else {
-      %orig(true);
-    }
   } else {
     %orig;
   }
