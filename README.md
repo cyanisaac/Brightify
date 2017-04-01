@@ -2,7 +2,7 @@
 A Lighter Look for Spotify | v0.1
 
 ## Screenshots
-http://imgur.com/a/fAn8t
+http://imgur.com/a/1Zn5d
 
 ## Compatibility
 Compatible with Spotify 8.1.0
