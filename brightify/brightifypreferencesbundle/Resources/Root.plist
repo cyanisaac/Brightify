@@ -11,6 +11,24 @@
 			<string>BrightifyPreferencesBundle First Page</string>
 		</dict>
 		<dict>
+			<key>PostNotification</key>
+			<string>com.cyanisaac.brightify.settingschanged</string>
+			<key>action</key>
+			<string>killSpotify</string>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.cyanisaac.brightify</string>
+			<key>id</key>
+			<string>enabled</string>
+			<key>key</key>
+			<string>enabled</string>
+			<key>label</key>
+			<string>Enable Lightify</string>
+		</dict>
+		<dict>
 			<key>action</key>
 			<string>safariTwitter</string>
 			<key>cell</key>

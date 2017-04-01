@@ -34,10 +34,12 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
-static BOOL doColorSpotify = true;
+static BOOL killswitch = NO;
+static BOOL doColorSpotify = NO;
 static float currentColorAlpha = 1.0;
 static int recursionDepth = 0;
 static BOOL isNoctisInstalled = NO;
+static BOOL isNoctisActive = NO;
 
 @interface BTFYReturnValuePair: NSObject
 @property(nonatomic) NSString* hexColorString;
@@ -58,6 +60,8 @@ static BOOL isNoctisInstalled = NO;
 @interface BTFYMethods: NSObject
 +(BTFYReturnValuePair*)getValuesForKey:(NSString*)colorKey;
 +(void)updateNoctis;
++(void)updateKillswitch;
++(BOOL)doColorSpotify;
 @end
 
 @implementation BTFYMethods
@@ -120,15 +124,48 @@ static BOOL isNoctisInstalled = NO;
 }
 
 +(void)updateNoctis {
-  CFPreferencesAppSynchronize(kNoctisAppID);
-  Boolean valid = NO;
-  BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
-  if (valid) {
-    doColorSpotify = !noctisEnabled;
+  if(isNoctisInstalled) {
+    CFPreferencesAppSynchronize(kNoctisAppID);
+    Boolean valid = NO;
+    BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
+    if (valid) {
+      isNoctisActive = noctisEnabled;
+    }
+  } else {
+    isNoctisActive = NO;
   }
 }
 
++(void)updateKillswitch {
+   NSDictionary* prefs = [NSDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.cyanisaac.brightify.plist"];
+   if(prefs != nil) {
+     if([prefs objectForKey:@"enabled"] != nil) {
+       killswitch = ![[prefs objectForKey:@"enabled"] boolValue];
+     } else {
+       killswitch = NO;
+     }
+   } else {
+     killswitch = NO;
+   }
+}
+
++(BOOL)doColorSpotify {
+  if(killswitch == NO && isNoctisActive == NO) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
++(NSArray*)returnDebugShit {
+  return @[[NSNumber numberWithBool: killswitch], [NSNumber numberWithBool:isNoctisActive], [NSNumber numberWithBool:isNoctisInstalled]];
+}
+
 @end
+
+static void killSpotify() {
+	exit(0);
+}
 
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -155,12 +192,14 @@ static BOOL isNoctisInstalled = NO;
         exit(0);
       }];
   }
+
+  CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)killSpotify, CFSTR("com.cyanisaac.brightify.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
 }
 
 %hook SPTTheme
 
 -(UIColor*)resolveColorForKey:(NSString*)arg1 {
-  if(doColorSpotify) {
+  if([BTFYMethods doColorSpotify]) {
     if(defaultColorsDictionary == nil) {
       NSBundle* spotifyBundle = [NSBundle mainBundle];
       NSString* pathForResource = [spotifyBundle pathForResource:@"Theme" ofType:@"plist"];
@@ -183,7 +222,7 @@ static BOOL isNoctisInstalled = NO;
 %hook UIBlurEffect
 
 +(id)effectWithStyle:(long long)arg1 {
-  if(doColorSpotify) {
+  if([BTFYMethods doColorSpotify]) {
     return %orig(UIBlurEffectStyleLight);
   } else {
     return %orig;
@@ -195,7 +234,7 @@ static BOOL isNoctisInstalled = NO;
 %hook UIApplication
 
 -(void)setStatusBarStyle:(long long)arg1 {
-  if(doColorSpotify) {
+  if([BTFYMethods doColorSpotify]) {
     %orig(UIStatusBarStyleDefault);
   } else {
     %orig;
@@ -207,6 +246,7 @@ static BOOL isNoctisInstalled = NO;
 %hook SpotifyAppDelegate
 
 -(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
+  [BTFYMethods updateKillswitch];
   if(isNoctisInstalled) {
     [BTFYMethods updateNoctis];
   }
