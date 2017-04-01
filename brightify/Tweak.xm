@@ -37,6 +37,7 @@ static NSDictionary* defaultColorsDictionary;
 static BOOL doColorSpotify = true;
 static float currentColorAlpha = 1.0;
 static int recursionDepth = 0;
+static BOOL isNoctisInstalled = NO;
 
 @interface BTFYReturnValuePair: NSObject
 @property(nonatomic) NSString* hexColorString;
@@ -56,6 +57,7 @@ static int recursionDepth = 0;
 
 @interface BTFYMethods: NSObject
 +(BTFYReturnValuePair*)getValuesForKey:(NSString*)colorKey;
++(void)updateNoctis;
 @end
 
 @implementation BTFYMethods
@@ -117,9 +119,16 @@ static int recursionDepth = 0;
   }
 }
 
++(void)updateNoctis {
+  CFPreferencesAppSynchronize(kNoctisAppID);
+  Boolean valid = NO;
+  BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
+  if (valid) {
+    doColorSpotify = !noctisEnabled;
+  }
+}
+
 @end
-
-
 
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
@@ -128,20 +137,14 @@ static int recursionDepth = 0;
   // Noctis support, thanks to Sticktron's DarkMessages for giving an example on
   // how to do this :).
   if ([[NSFileManager defaultManager] fileExistsAtPath:@"/Library/MobileSubstrate/DynamicLibraries/Noctis.dylib"]) {
-    CFPreferencesAppSynchronize(kNoctisAppID);
-  	Boolean valid = NO;
-  	BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
-  	if (valid) {
-  		doColorSpotify = !noctisEnabled;
-  	}
+    isNoctisInstalled = YES;
 
     [[NSNotificationCenter defaultCenter]
       addObserverForName:@"com.laughingquoll.noctis.enablenotification"
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        doColorSpotify = NO;
-        system("killall -9 Spotify");
+        exit(0);
       }];
 
     [[NSNotificationCenter defaultCenter]
@@ -149,8 +152,7 @@ static int recursionDepth = 0;
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        doColorSpotify = YES;
-        system("killall -9 Spotify");
+        exit(0);
       }];
   }
 }
@@ -198,6 +200,18 @@ static int recursionDepth = 0;
   } else {
     %orig;
   }
+}
+
+%end
+
+%hook SpotifyAppDelegate
+
+-(BOOL)application:(id)arg1 didFinishLaunchingWithOptions:(id)arg2 {
+  if(isNoctisInstalled) {
+    [BTFYMethods updateNoctis];
+  }
+
+  return %orig;
 }
 
 %end
