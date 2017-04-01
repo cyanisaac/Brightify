@@ -19,6 +19,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "BTFYRootListController.h"
 #include <Preferences/PSSpecifier.h>
 
+#define kPrefsPlistPath @"/var/mobile/Library/Preferences/com.cyanisaac.brightify.plist"
+
 @implementation BTFYRootListController
 
 - (NSArray *)specifiers {
@@ -29,20 +31,23 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	return _specifiers;
 }
 
-- (id)readPreferenceValue:(PSSpecifier*)specifier {
-	NSString *path = [NSString stringWithFormat:@"/User/Library/Preferences/%@.plist", specifier.properties[@"defaults"]];
-	NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:path];
-	return (settings[specifier.properties[@"key"]]) ?: specifier.properties[@"default"];
+- (id)readPreferenceValue:(PSSpecifier *)specifier {
+	NSDictionary *settings = [NSDictionary dictionaryWithContentsOfFile:kPrefsPlistPath];
+	if (!settings[specifier.properties[@"key"]]) {
+		return specifier.properties[@"default"];
+	}
+	return settings[specifier.properties[@"key"]];
 }
 
-- (void)setPreferenceValue:(id)value specifier:(PSSpecifier*)specifier {
-	NSString *path = [NSString stringWithFormat:@"/User/Library/Preferences/%@.plist", specifier.properties[@"defaults"]];
-	NSMutableDictionary *settings = [NSMutableDictionary dictionaryWithContentsOfFile:path];
+- (void)setPreferenceValue:(id)value specifier:(PSSpecifier *)specifier {
+	NSMutableDictionary *settings = [NSMutableDictionary dictionary];
+	[settings addEntriesFromDictionary:[NSDictionary dictionaryWithContentsOfFile:kPrefsPlistPath]];
 	[settings setObject:value forKey:specifier.properties[@"key"]];
-	[settings writeToFile:path atomically:YES];
-	CFStringRef notificationName = (CFStringRef)specifier.properties[@"PostNotification"];
-	if (notificationName) {
-		CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), notificationName, NULL, NULL, YES);
+	[settings writeToFile:kPrefsPlistPath atomically:YES];
+
+	CFStringRef notificationValue = (__bridge CFStringRef)specifier.properties[@"PostNotification"];
+	if (notificationValue) {
+		CFNotificationCenterPostNotification(CFNotificationCenterGetDarwinNotifyCenter(), notificationValue, NULL, NULL, YES);
 	}
 }
 
