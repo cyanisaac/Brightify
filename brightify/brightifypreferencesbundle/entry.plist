@@ -15,7 +15,7 @@
 		<key>isController</key>
 		<true/>
 		<key>label</key>
-		<string>BrightifyPreferencesBundle</string>
+		<string>Brightify</string>
 	</dict>
 </dict>
 </plist>

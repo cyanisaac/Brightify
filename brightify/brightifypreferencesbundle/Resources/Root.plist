@@ -11,19 +11,31 @@
 			<string>BrightifyPreferencesBundle First Page</string>
 		</dict>
 		<dict>
+			<key>action</key>
+			<string>safariTwitter</string>
 			<key>cell</key>
-			<string>PSSwitchCell</string>
-			<key>default</key>
-			<true/>
-			<key>defaults</key>
-			<string>com.cyanisaac.brightifypreferencesbundle</string>
-			<key>key</key>
-			<string>AwesomeSwitch1</string>
+			<string>PSButtonCell</string>
 			<key>label</key>
-			<string>Awesome Switch 1</string>
+			<string>@cyanisaac on Twitter</string>
+		</dict>
+		<dict>
+			<key>action</key>
+			<string>safariRepository</string>
+			<key>cell</key>
+			<string>PSButtonCell</string>
+			<key>label</key>
+			<string>Source Code [GPLv3+]</string>
+		</dict>
+		<dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>footerAlignment</key>
+			<string>1</string>
+			<key>footerText</key>
+			<string>Created by cyanisaac</string>
 		</dict>
 	</array>
 	<key>title</key>
-	<string>BrightifyPreferencesBundle</string>
+	<string>Brightify</string>
 </dict>
 </plist>
