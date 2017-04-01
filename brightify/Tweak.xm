@@ -1,5 +1,5 @@
 /*
-Tweak file for Brightify, containing recolouring logic.
+Tweak file for Brightify, containing recolouring logic and minor UI hooks/fixes.
 Copyright (c) 2017 Isaac Trimble-Pederson, All Rights Reserved.
 
 This program is free software: you can redistribute it and/or modify
