@@ -6,6 +6,8 @@
 	<string>#FFFFFF</string>
 	<key>actionButtonPrimaryTitleColor</key>
 	<string>#FFFFFF</string>
+	<key>catClearColor</key>
+	<string>#FFFFFF</string>
 	<key>glueBackgroundColor</key>
 	<string>#FFFFFF</string>
 	<key>glueBlack02Color</key>
