@@ -35,9 +35,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
 static BOOL killswitch = NO;
-static BOOL doColorSpotify = NO;
-static float currentColorAlpha = 1.0;
-static int recursionDepth = 0;
 static BOOL isNoctisInstalled = NO;
 static BOOL isNoctisActive = NO;
 
@@ -155,10 +152,6 @@ static BOOL isNoctisActive = NO;
   } else {
     return NO;
   }
-}
-
-+(NSArray*)returnDebugShit {
-  return @[[NSNumber numberWithBool: killswitch], [NSNumber numberWithBool:isNoctisActive], [NSNumber numberWithBool:isNoctisInstalled]];
 }
 
 @end
