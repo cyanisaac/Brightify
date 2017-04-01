@@ -17,7 +17,7 @@
 Package: com.cyanisaac.brightify
 Name: Brightify
 Depends: mobilesubstrate
-Version: 0.0.1
+Version: 0.1.0
 Architecture: iphoneos-arm
 Description: A light look-and-feel for Spotify.
 Maintainer: cyanisaac
