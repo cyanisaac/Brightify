@@ -1,0 +1,92 @@
+<!--
+Color overrides plist for Brightify, with values for color swaps.
+Copyright (c) 2017 Isaac Trimble-Pederson, All Rights Reserved.
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+-->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>actionButtonLabelColor</key>
+	<string>#FFFFFF</string>
+	<key>actionButtonPrimaryTitleColor</key>
+	<string>#FFFFFF</string>
+	<key>catClearColor</key>
+	<string>#FFFFFF</string>
+	<key>glueBackgroundColor</key>
+	<string>#FFFFFF</string>
+	<key>glueBlack02Color</key>
+	<string>#D9DEDE
+#D9DEDE
+#D9DEDE</string>
+	<key>glueBlack04Color</key>
+	<string>#CBCFCF</string>
+	<key>glueBlack06Color</key>
+	<string>#BDC1C1
+#BDC1C1
+#BDC1C1
+#BDC1C1
+</string>
+	<key>glueBlackColor</key>
+	<string>#FFFFFF</string>
+	<key>glueGray12Color</key>
+	<string>#E3E3E0</string>
+	<key>glueGray15Color</key>
+	<string>#DDDCD9</string>
+	<key>glueGray20Color</key>
+	<string>#D1D0CC</string>
+	<key>glueGray25Color</key>
+	<string>#C1C1BF
+#C1C1BF
+</string>
+	<key>glueGray55Color</key>
+	<string>#777673
+</string>
+	<key>glueGray70Color</key>
+	<string>#52514C
+</string>
+	<key>glueGray80Color</key>
+	<string>#393833
+</string>
+	<key>glueGray8Color</key>
+	<string>#FFFFFF</string>
+	<key>glueGray90Color</key>
+	<string>#201F19
+</string>
+	<key>glueGray95Color</key>
+	<string>#14120D
+</string>
+	<key>glueInactiveColor</key>
+	<string>#A7A7A7
+</string>
+	<key>glueLayerColor</key>
+	<string>#D7D7D7
+</string>
+	<key>glueSecondaryColor</key>
+	<string>#5F5F5F
+</string>
+	<key>glueWhiteColor</key>
+	<string>#000000</string>
+	<key>nowPlayingBarBackgroundColor</key>
+	<string>#FFFFFF</string>
+	<key>switchThumbTintColor</key>
+	<string>#FFFFFF</string>
+	<key>switchTintColor</key>
+	<string>#FFFFFF</string>
+	<key>tabBarTintColor</key>
+	<string>#FFFFFF</string>
+</dict>
+</plist>

@@ -1,0 +1,10 @@
+Package: com.cyanisaac.brightify
+Name: Brightify
+Depends: mobilesubstrate
+Version: 0.1.0
+Architecture: iphoneos-arm
+Description: A light look-and-feel for Spotify.
+Maintainer: cyanisaac
+Author: cyanisaac
+Section: Tweaks
+Icon: file:///Library/PreferenceBundles/BrightifyPreferencesBundle.bundle/icon.png
