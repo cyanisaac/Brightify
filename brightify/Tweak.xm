@@ -154,6 +154,17 @@ static BOOL isNoctisActive = NO;
   }
 }
 
+// iPad is NOT supported; I cannot test if this code will work.
+// This might work and might not. No way to test. I don't have an iPad.
+// -isaac
++(BOOL)isiPad {
+  if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
 @end
 
 static void killSpotify() {
