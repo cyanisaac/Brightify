@@ -28,6 +28,14 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 - resolveColorForKey:(NSString*)arg1;
 @end
 
+@interface SPTPopupWindow: UIWindow
++ (instancetype)new;
+@end
+
+@interface SPTPopupManager: NSObject
+@property(retain, nonatomic) SPTPopupWindow *window;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -281,6 +289,25 @@ static void killSpotify() {
   }
 
   return %orig;
+}
+
+%end
+
+%hook SPTPopupManager
+// Hacky fix for blue window, since I can't figure out what's causing it.
+// I'll also add a nice blur view to complement it :).
+
+- (void)loadWindow {
+  // Get original
+  SPTPopupWindow* originalWindow = [%c(SPTPopupWindow) new];
+  [originalWindow setBackgroundColor:[UIColor clearColor]];
+
+  // Add blur view.
+  UIVisualEffectView* backgroundBlurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]]; // Dark blurs will be overridden in light mode, so this works.
+  [backgroundBlurView setFrame:CGRectMake(originalWindow.frame.origin.x, originalWindow.frame.origin.y, originalWindow.frame.size.width, originalWindow.frame.size.height)];
+  [originalWindow addSubview: backgroundBlurView];
+
+  self.window = originalWindow;
 }
 
 %end
