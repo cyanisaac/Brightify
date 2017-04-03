@@ -114,11 +114,27 @@ static BOOL isNoctisActive = NO;
     }
   }
 
+  // Handle eight character hex color shit
+  // Why didn't Spotify keep this in Android?
   NSNumber* finalAlpha;
-  if([foundAlphaValues lastObject] != nil) {
-    finalAlpha = [foundAlphaValues lastObject];
+  if([foundHexColor length] == 8) {
+    float maybeAlpha;
+    NSString* foundAlphaHexString = [foundHexColor substringToIndex:2];
+    foundHexColor = [foundHexColor substringFromIndex:2];
+
+    NSScanner* alphaHexScanner = [NSScanner scannerWithString:foundAlphaHexString];
+    BOOL didSuccessfullyScan = [alphaHexScanner scanHexFloat:&maybeAlpha];
+    if(didSuccessfullyScan) {
+      finalAlpha = [NSNumber numberWithFloat:maybeAlpha];
+    } else {
+      finalAlpha = [NSNumber numberWithFloat:1.0]; // Fix if something goes wrong.
+    }
   } else {
-    finalAlpha = [NSNumber numberWithFloat:1.0];
+    if([foundAlphaValues lastObject] != nil) {
+      finalAlpha = [foundAlphaValues lastObject];
+    } else {
+      finalAlpha = [NSNumber numberWithFloat:1.0];
+    }
   }
 
   BTFYReturnValuePair* valuePair = [[BTFYReturnValuePair alloc] initWithColorString:foundHexColor alpha:finalAlpha];
