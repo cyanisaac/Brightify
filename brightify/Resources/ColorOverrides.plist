@@ -8,6 +8,8 @@
 	<string>FFFFFF</string>
 	<key>catClearColor</key>
 	<string>FFFFFF</string>
+	<key>catOverlayBackgroundColor</key>
+	<string>#a3a3a3</string>
 	<key>glueBackgroundColor</key>
 	<string>FFFFFF</string>
 	<key>glueBlack02Color</key>
