@@ -36,6 +36,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @property(retain, nonatomic) SPTPopupWindow *window;
 @end
 
+@interface MessageBarController: UIViewController
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -308,6 +311,16 @@ static void killSpotify() {
   [originalWindow addSubview: backgroundBlurView];
 
   self.window = originalWindow;
+}
+
+%end
+
+%hook MessageBarController
+
+-(id)init {
+  MessageBarController* originalMessageBarController = %orig;
+  [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
+  return originalMessageBarController;
 }
 
 %end
