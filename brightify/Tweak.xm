@@ -39,6 +39,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @interface MessageBarController: UIViewController
 @end
 
+@interface SPTCeramicCompactGridCollectionViewCell: UIView
+@property(readonly, nonatomic) UILabel *titleLabel;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -234,6 +238,9 @@ static void killSpotify() {
   }
 
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)killSpotify, CFSTR("com.cyanisaac.brightify.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+
+  [BTFYMethods updateNoctis];
+  [BTFYMethods updateKillswitch];
 }
 
 %hook SPTTheme
@@ -301,16 +308,20 @@ static void killSpotify() {
 // I'll also add a nice blur view to complement it :).
 
 - (void)loadWindow {
-  // Get original
-  SPTPopupWindow* originalWindow = [%c(SPTPopupWindow) new];
-  [originalWindow setBackgroundColor:[UIColor clearColor]];
+  if([BTFYMethods doColorSpotify]) {
+    // Get original
+    SPTPopupWindow* originalWindow = [%c(SPTPopupWindow) new];
+    [originalWindow setBackgroundColor:[UIColor clearColor]];
 
-  // Add blur view.
-  UIVisualEffectView* backgroundBlurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]]; // Dark blurs will be overridden in light mode, so this works.
-  [backgroundBlurView setFrame:CGRectMake(originalWindow.frame.origin.x, originalWindow.frame.origin.y, originalWindow.frame.size.width, originalWindow.frame.size.height)];
-  [originalWindow addSubview: backgroundBlurView];
+    // Add blur view.
+    UIVisualEffectView* backgroundBlurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]]; // Dark blurs will be overridden in light mode, so this works.
+    [backgroundBlurView setFrame:CGRectMake(originalWindow.frame.origin.x, originalWindow.frame.origin.y, originalWindow.frame.size.width, originalWindow.frame.size.height)];
+    [originalWindow addSubview: backgroundBlurView];
 
-  self.window = originalWindow;
+    self.window = originalWindow;
+  } else {
+    return %orig;
+  }
 }
 
 %end
@@ -318,9 +329,30 @@ static void killSpotify() {
 %hook MessageBarController
 
 -(id)init {
-  MessageBarController* originalMessageBarController = %orig;
-  [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
-  return originalMessageBarController;
+  [BTFYMethods updateNoctis];
+  [BTFYMethods updateKillswitch];
+  
+  if([BTFYMethods doColorSpotify]) {
+    MessageBarController* originalMessageBarController = %orig;
+    [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
+    return originalMessageBarController;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook SPTCeramicCompactGridCollectionViewCell
+
+-(id)initWithFrame:(CGRect)arg1 {
+  if([BTFYMethods doColorSpotify]) {
+    SPTCeramicCompactGridCollectionViewCell* workingCell = %orig(arg1);
+    [workingCell.titleLabel setTextColor:[UIColor whiteColor]];
+    return workingCell;
+  } else {
+    return %orig;
+  }
 }
 
 %end
