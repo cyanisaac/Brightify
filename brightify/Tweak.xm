@@ -73,7 +73,16 @@ static BOOL isNoctisActive = NO;
     }
     NSDictionary* dictForColor = [defaultColorsDictionary objectForKey:workingColorKey];
     if(dictForColor != nil) {
-      id foundColorValue = [dictForColor objectForKey:@""]; // iPad not supported. Will fix in later version.
+      id foundColorValue;
+      if([dictForColor objectForKey:@"ipad"] != nil && [BTFYMethods isiPad]) {
+        /*
+        Obligatory: iPad is NOT tested - this *should* make it work on iPad, but
+        I have no iPad (let alone jailbroken) to test.
+        */
+        foundColorValue = [dictForColor objectForKey:@"ipad"];
+      } else {
+        foundColorValue = [dictForColor objectForKey:@""];
+      }
       if ([foundColorValue isKindOfClass:[NSString class]]) {
         NSString* foundColorString = foundColorValue;
         if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
