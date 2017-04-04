@@ -50,6 +50,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
 static BOOL killswitch = NO;
+static BOOL listenToNoctis = YES;
 static BOOL isNoctisInstalled = NO;
 static BOOL isNoctisActive = NO;
 
@@ -162,11 +163,26 @@ static BOOL isNoctisActive = NO;
 
 +(void)updateNoctis {
   if(isNoctisInstalled) {
-    CFPreferencesAppSynchronize(kNoctisAppID);
-    Boolean valid = NO;
-    BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
-    if (valid) {
-      isNoctisActive = noctisEnabled;
+    NSDictionary* prefs = [NSDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.cyanisaac.brightify.plist"];
+    if(prefs != nil) {
+      if([prefs objectForKey:@"listenToNoctis"] != nil) {
+        listenToNoctis = [[prefs objectForKey:@"listenToNoctis"] boolValue];
+      } else {
+        listenToNoctis = YES;
+      }
+    } else {
+      listenToNoctis = YES;
+    }
+
+    if(listenToNoctis) {
+      CFPreferencesAppSynchronize(kNoctisAppID);
+      Boolean valid = NO;
+      BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
+      if (valid) {
+        isNoctisActive = noctisEnabled;
+      }
+    } else {
+      isNoctisActive = NO;
     }
   } else {
     isNoctisActive = NO;
@@ -211,6 +227,12 @@ static void killSpotify() {
 	exit(0);
 }
 
+static void killSpotifyForNoctis() {
+  if(listenToNoctis) {
+    exit(0);
+  }
+}
+
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
   colorOverrideDictionary = [[NSDictionary alloc] initWithContentsOfFile:[tweakBundle pathForResource:@"ColorOverrides" ofType:@"plist"]];
@@ -225,7 +247,7 @@ static void killSpotify() {
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        exit(0);
+        killSpotifyForNoctis();
       }];
 
     [[NSNotificationCenter defaultCenter]
@@ -233,7 +255,7 @@ static void killSpotify() {
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        exit(0);
+        killSpotifyForNoctis();
       }];
   }
 
@@ -331,7 +353,7 @@ static void killSpotify() {
 -(id)init {
   [BTFYMethods updateNoctis];
   [BTFYMethods updateKillswitch];
-  
+
   if([BTFYMethods doColorSpotify]) {
     MessageBarController* originalMessageBarController = %orig;
     [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
