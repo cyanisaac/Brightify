@@ -28,6 +28,21 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 - resolveColorForKey:(NSString*)arg1;
 @end
 
+@interface SPTPopupWindow: UIWindow
++ (instancetype)new;
+@end
+
+@interface SPTPopupManager: NSObject
+@property(retain, nonatomic) SPTPopupWindow *window;
+@end
+
+@interface MessageBarController: UIViewController
+@end
+
+@interface SPTCeramicCompactGridCollectionViewCell: UIView
+@property(readonly, nonatomic) UILabel *titleLabel;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -73,7 +88,16 @@ static BOOL isNoctisActive = NO;
     }
     NSDictionary* dictForColor = [defaultColorsDictionary objectForKey:workingColorKey];
     if(dictForColor != nil) {
-      id foundColorValue = [dictForColor objectForKey:@""]; // iPad not supported. Will fix in later version.
+      id foundColorValue;
+      if([dictForColor objectForKey:@"ipad"] != nil && [BTFYMethods isiPad]) {
+        /*
+        Obligatory: iPad is NOT tested - this *should* make it work on iPad, but
+        I have no iPad (let alone jailbroken) to test.
+        */
+        foundColorValue = [dictForColor objectForKey:@"ipad"];
+      } else {
+        foundColorValue = [dictForColor objectForKey:@""];
+      }
       if ([foundColorValue isKindOfClass:[NSString class]]) {
         NSString* foundColorString = foundColorValue;
         if([defaultColorsDictionary objectForKey:foundColorString] != nil) {
@@ -105,11 +129,27 @@ static BOOL isNoctisActive = NO;
     }
   }
 
+  // Handle eight character hex color shit
+  // Why didn't Spotify keep this in Android?
   NSNumber* finalAlpha;
-  if([foundAlphaValues lastObject] != nil) {
-    finalAlpha = [foundAlphaValues lastObject];
+  if([foundHexColor length] == 8) {
+    float maybeAlpha;
+    NSString* foundAlphaHexString = [foundHexColor substringToIndex:2];
+    foundHexColor = [foundHexColor substringFromIndex:2];
+
+    NSScanner* alphaHexScanner = [NSScanner scannerWithString:foundAlphaHexString];
+    BOOL didSuccessfullyScan = [alphaHexScanner scanHexFloat:&maybeAlpha];
+    if(didSuccessfullyScan) {
+      finalAlpha = [NSNumber numberWithFloat:maybeAlpha];
+    } else {
+      finalAlpha = [NSNumber numberWithFloat:1.0]; // Fix if something goes wrong.
+    }
   } else {
-    finalAlpha = [NSNumber numberWithFloat:1.0];
+    if([foundAlphaValues lastObject] != nil) {
+      finalAlpha = [foundAlphaValues lastObject];
+    } else {
+      finalAlpha = [NSNumber numberWithFloat:1.0];
+    }
   }
 
   BTFYReturnValuePair* valuePair = [[BTFYReturnValuePair alloc] initWithColorString:foundHexColor alpha:finalAlpha];
@@ -154,6 +194,17 @@ static BOOL isNoctisActive = NO;
   }
 }
 
+// iPad is NOT supported; I cannot test if this code will work.
+// This might work and might not. No way to test. I don't have an iPad.
+// -isaac
++(BOOL)isiPad {
+  if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad ) {
+    return YES;
+  } else {
+    return NO;
+  }
+}
+
 @end
 
 static void killSpotify() {
@@ -187,6 +238,9 @@ static void killSpotify() {
   }
 
   CFNotificationCenterAddObserver(CFNotificationCenterGetDarwinNotifyCenter(), NULL, (CFNotificationCallback)killSpotify, CFSTR("com.cyanisaac.brightify.settingschanged"), NULL, CFNotificationSuspensionBehaviorCoalesce);
+
+  [BTFYMethods updateNoctis];
+  [BTFYMethods updateKillswitch];
 }
 
 %hook SPTTheme
@@ -245,6 +299,60 @@ static void killSpotify() {
   }
 
   return %orig;
+}
+
+%end
+
+%hook SPTPopupManager
+// Hacky fix for blue window, since I can't figure out what's causing it.
+// I'll also add a nice blur view to complement it :).
+
+- (void)loadWindow {
+  if([BTFYMethods doColorSpotify]) {
+    // Get original
+    SPTPopupWindow* originalWindow = [%c(SPTPopupWindow) new];
+    [originalWindow setBackgroundColor:[UIColor clearColor]];
+
+    // Add blur view.
+    UIVisualEffectView* backgroundBlurView = [[UIVisualEffectView alloc] initWithEffect:[UIBlurEffect effectWithStyle:UIBlurEffectStyleDark]]; // Dark blurs will be overridden in light mode, so this works.
+    [backgroundBlurView setFrame:CGRectMake(originalWindow.frame.origin.x, originalWindow.frame.origin.y, originalWindow.frame.size.width, originalWindow.frame.size.height)];
+    [originalWindow addSubview: backgroundBlurView];
+
+    self.window = originalWindow;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook MessageBarController
+
+-(id)init {
+  [BTFYMethods updateNoctis];
+  [BTFYMethods updateKillswitch];
+  
+  if([BTFYMethods doColorSpotify]) {
+    MessageBarController* originalMessageBarController = %orig;
+    [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
+    return originalMessageBarController;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook SPTCeramicCompactGridCollectionViewCell
+
+-(id)initWithFrame:(CGRect)arg1 {
+  if([BTFYMethods doColorSpotify]) {
+    SPTCeramicCompactGridCollectionViewCell* workingCell = %orig(arg1);
+    [workingCell.titleLabel setTextColor:[UIColor whiteColor]];
+    return workingCell;
+  } else {
+    return %orig;
+  }
 }
 
 %end
