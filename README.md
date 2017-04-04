@@ -1,5 +1,5 @@
 # Brightify
-A Lighter Look for Spotify | v0.1
+A Lighter Look for Spotify | v0.2
 
 ## Screenshots
 http://imgur.com/a/1Zn5d
@@ -9,7 +9,7 @@ Compatible with Spotify 8.1.0
 
 Compatible with iOS 10.x Yalu102 jailbroken iPhones.
 
-*Not compatible with iPad.*
+*May be compatible with iPad.* Untested.
 
 Tested on iPhone 6s, 10.2, yalu102 b7.
 
