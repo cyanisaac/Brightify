@@ -83,10 +83,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://github.com/cyanisaac/Brightify"]];
 }
 
--(void)safariDonation {
-	[[UIApplication sharedApplication] openURL:[NSURL URLWithString:@"https://paypal.me/cyanisaac"]];
-}
-
 -(void)killSpotify {
 	system("killall -9 Spotify");
 }
