@@ -68,6 +68,10 @@ C1C1BF
 	<string>FFFFFF</string>
 	<key>popupBackgroundColor</key>
 	<string>FFFFFF</string>
+	<key>popupSecondaryButtonTitleColor</key>
+	<string>000000</string>
+	<key>popupTitleColor</key>
+	<string>000000</string>
 	<key>switchThumbTintColor</key>
 	<string>FFFFFF</string>
 	<key>switchTintColor</key>
