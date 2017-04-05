@@ -43,6 +43,10 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @property(readonly, nonatomic) UILabel *titleLabel;
 @end
 
+@interface GLUEHeaderView
+@property(readonly, nonatomic) CAGradientLayer *collapsedShadowLayer;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -372,6 +376,34 @@ static void killSpotifyForNoctis() {
     SPTCeramicCompactGridCollectionViewCell* workingCell = %orig(arg1);
     [workingCell.titleLabel setTextColor:[UIColor whiteColor]];
     return workingCell;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook GLUEHeaderView
+
+/*
++(id)new {
+  if([BTFYMethods doColorSpotify]) {
+    GLUEHeaderView* workingHeaderView = %orig;
+    NSArray* newColors = @[[UIColor whiteColor], [UIColor clearColor]];
+    [[workingHeaderView collapsedShadowLayer] setColors:newColors];
+    return workingHeaderView;
+  } else {
+    return %orig;
+  }
+}
+*/
+
+-(CAGradientLayer*)collapsedShadowLayer {
+  if([BTFYMethods doColorSpotify]) {
+    CAGradientLayer* workingShadowLayer = %orig;
+    NSArray* newColors = @[(id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1 alpha:0].CGColor]; // This line is shit but it works I guess.
+    [workingShadowLayer setColors:newColors];
+    return workingShadowLayer;
   } else {
     return %orig;
   }
