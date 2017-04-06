@@ -47,6 +47,15 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @property(readonly, nonatomic) CAGradientLayer *collapsedShadowLayer;
 @end
 
+@interface SPTGaiaDevicePickerHeaderView: UIView
+@property(retain, nonatomic) UIImageView *imageView;
+@end
+
+@interface CALayer(Private)
+@property(atomic,assign,readwrite) CGColorRef contentsMultiplyColor;
+@end
+
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -385,25 +394,26 @@ static void killSpotifyForNoctis() {
 
 %hook GLUEHeaderView
 
-/*
-+(id)new {
-  if([BTFYMethods doColorSpotify]) {
-    GLUEHeaderView* workingHeaderView = %orig;
-    NSArray* newColors = @[[UIColor whiteColor], [UIColor clearColor]];
-    [[workingHeaderView collapsedShadowLayer] setColors:newColors];
-    return workingHeaderView;
-  } else {
-    return %orig;
-  }
-}
-*/
-
 -(CAGradientLayer*)collapsedShadowLayer {
   if([BTFYMethods doColorSpotify]) {
     CAGradientLayer* workingShadowLayer = %orig;
     NSArray* newColors = @[(id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1 alpha:0].CGColor]; // This line is shit but it works I guess.
     [workingShadowLayer setColors:newColors];
     return workingShadowLayer;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook SPTGaiaDevicePickerHeaderView
+
+-(id)initWithFrame:(CGRect*)rect {
+  if([BTFYMethods doColorSpotify]) {
+    SPTGaiaDevicePickerHeaderView* workingHeaderView = %orig;
+    workingHeaderView.imageView.layer.contentsMultiplyColor = [[UIColor blackColor] CGColor];
+    return workingHeaderView;
   } else {
     return %orig;
   }
