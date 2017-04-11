@@ -420,3 +420,17 @@ static void killSpotifyForNoctis() {
 }
 
 %end
+
+%hook UIViewController
+
+- (UIStatusBarStyle) preferredStatusBarStyle {
+    if([BTFYMethods doColorSpotify]) {
+      return UIStatusBarStyleDefault;
+    } else {
+      int originalStyle = UIStatusBarStyleLightContent;
+      originalStyle = %orig;
+      return originalStyle;
+    }
+}
+
+%end
