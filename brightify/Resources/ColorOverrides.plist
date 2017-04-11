@@ -4,6 +4,8 @@
 <dict>
 	<key>actionButtonLabelColor</key>
 	<string>FFFFFF</string>
+	<key>actionButtonLargeSecondaryBackgroundColor</key>
+	<string>FFFFFF</string>
 	<key>actionButtonPrimaryTitleColor</key>
 	<string>FFFFFF</string>
 	<key>catClearColor</key>
