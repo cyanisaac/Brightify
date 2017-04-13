@@ -4,6 +4,8 @@
 <dict>
 	<key>actionButtonLabelColor</key>
 	<string>FFFFFF</string>
+	<key>actionButtonLargeSecondaryBackgroundColor</key>
+	<string>FFFFFF</string>
 	<key>actionButtonPrimaryTitleColor</key>
 	<string>FFFFFF</string>
 	<key>catClearColor</key>
@@ -68,10 +70,14 @@ C1C1BF
 	<string>FFFFFF</string>
 	<key>popupBackgroundColor</key>
 	<string>FFFFFF</string>
+	<key>popupSecondaryButtonTitleColor</key>
+	<string>000000</string>
+	<key>popupTitleColor</key>
+	<string>000000</string>
 	<key>switchThumbTintColor</key>
 	<string>FFFFFF</string>
 	<key>switchTintColor</key>
-	<string>FFFFFF</string>
+	<string>E3E3E0</string>
 	<key>tabBarTintColor</key>
 	<string>FFFFFF</string>
 </dict>

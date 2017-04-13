@@ -29,6 +29,22 @@
 			<string>Enable Brightify</string>
 		</dict>
 		<dict>
+			<key>PostNotification</key>
+			<string>com.cyanisaac.brightify.settingschanged</string>
+			<key>cell</key>
+			<string>PSSwitchCell</string>
+			<key>default</key>
+			<true/>
+			<key>defaults</key>
+			<string>com.cyanisaac.brightifyprefs</string>
+			<key>id</key>
+			<string>listenToNoctis</string>
+			<key>key</key>
+			<string>listenToNoctis</string>
+			<key>label</key>
+			<string>Use Noctis as Toggle (if installed)</string>
+		</dict>
+		<dict>
 			<key>action</key>
 			<string>safariTwitter</string>
 			<key>cell</key>

@@ -43,6 +43,22 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @property(readonly, nonatomic) UILabel *titleLabel;
 @end
 
+@interface GLUEHeaderView
+@property(readonly, nonatomic) CAGradientLayer *collapsedShadowLayer;
+@end
+
+@interface SPTGaiaDevicePickerHeaderView: UIView
+@property(retain, nonatomic) UIImageView *imageView;
+@end
+
+@interface CALayer(Private)
+@property(atomic,assign,readwrite) CGColorRef contentsMultiplyColor;
+@end
+
+@interface SPTActionButton: UIButton
+@property(readonly, nonatomic) NSInteger size;
+@end
+
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
 #define kNoctisEnabledKey CFSTR("LQDDarkModeEnabled")
@@ -50,6 +66,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 static NSDictionary* colorOverrideDictionary;
 static NSDictionary* defaultColorsDictionary;
 static BOOL killswitch = NO;
+static BOOL listenToNoctis = YES;
 static BOOL isNoctisInstalled = NO;
 static BOOL isNoctisActive = NO;
 
@@ -162,11 +179,26 @@ static BOOL isNoctisActive = NO;
 
 +(void)updateNoctis {
   if(isNoctisInstalled) {
-    CFPreferencesAppSynchronize(kNoctisAppID);
-    Boolean valid = NO;
-    BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
-    if (valid) {
-      isNoctisActive = noctisEnabled;
+    NSDictionary* prefs = [NSDictionary dictionaryWithContentsOfFile:@"/User/Library/Preferences/com.cyanisaac.brightify.plist"];
+    if(prefs != nil) {
+      if([prefs objectForKey:@"listenToNoctis"] != nil) {
+        listenToNoctis = [[prefs objectForKey:@"listenToNoctis"] boolValue];
+      } else {
+        listenToNoctis = YES;
+      }
+    } else {
+      listenToNoctis = YES;
+    }
+
+    if(listenToNoctis) {
+      CFPreferencesAppSynchronize(kNoctisAppID);
+      Boolean valid = NO;
+      BOOL noctisEnabled = CFPreferencesGetAppBooleanValue(kNoctisEnabledKey, kNoctisAppID, &valid);
+      if (valid) {
+        isNoctisActive = noctisEnabled;
+      }
+    } else {
+      isNoctisActive = NO;
     }
   } else {
     isNoctisActive = NO;
@@ -211,6 +243,12 @@ static void killSpotify() {
 	exit(0);
 }
 
+static void killSpotifyForNoctis() {
+  if(listenToNoctis) {
+    exit(0);
+  }
+}
+
 %ctor {
   NSBundle* tweakBundle = [[NSBundle alloc] initWithPath:kBundlePath];
   colorOverrideDictionary = [[NSDictionary alloc] initWithContentsOfFile:[tweakBundle pathForResource:@"ColorOverrides" ofType:@"plist"]];
@@ -225,7 +263,7 @@ static void killSpotify() {
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        exit(0);
+        killSpotifyForNoctis();
       }];
 
     [[NSNotificationCenter defaultCenter]
@@ -233,7 +271,7 @@ static void killSpotify() {
       object:nil
       queue:[NSOperationQueue mainQueue]
       usingBlock:^(NSNotification *note) {
-        exit(0);
+        killSpotifyForNoctis();
       }];
   }
 
@@ -331,7 +369,7 @@ static void killSpotify() {
 -(id)init {
   [BTFYMethods updateNoctis];
   [BTFYMethods updateKillswitch];
-  
+
   if([BTFYMethods doColorSpotify]) {
     MessageBarController* originalMessageBarController = %orig;
     [originalMessageBarController.view setBackgroundColor:[UIColor whiteColor]];
@@ -352,6 +390,63 @@ static void killSpotify() {
     return workingCell;
   } else {
     return %orig;
+  }
+}
+
+%end
+
+%hook GLUEHeaderView
+
+-(CAGradientLayer*)collapsedShadowLayer {
+  if([BTFYMethods doColorSpotify]) {
+    CAGradientLayer* workingShadowLayer = %orig;
+    NSArray* newColors = @[(id)[UIColor whiteColor].CGColor, (id)[UIColor colorWithWhite:1 alpha:0].CGColor]; // This line is shit but it works I guess.
+    [workingShadowLayer setColors:newColors];
+    return workingShadowLayer;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook SPTGaiaDevicePickerHeaderView
+
+-(id)initWithFrame:(CGRect*)rect {
+  if([BTFYMethods doColorSpotify]) {
+    SPTGaiaDevicePickerHeaderView* workingHeaderView = %orig;
+    workingHeaderView.imageView.layer.contentsMultiplyColor = [[UIColor blackColor] CGColor];
+    return workingHeaderView;
+  } else {
+    return %orig;
+  }
+}
+
+%end
+
+%hook UIViewController
+
+- (UIStatusBarStyle) preferredStatusBarStyle {
+    if([BTFYMethods doColorSpotify]) {
+      return UIStatusBarStyleDefault;
+    } else {
+      int originalStyle = UIStatusBarStyleLightContent;
+      originalStyle = %orig;
+      return originalStyle;
+    }
+}
+
+%end
+
+%hook SPTActionButton
+
+-(void)applyThemeLayout {
+  %orig;
+
+  if ([BTFYMethods doColorSpotify]) {
+    if(self.size == 1) { // This means that the button is the smaller style in the header.
+      [self setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    }
   }
 }
 
