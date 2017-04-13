@@ -34,7 +34,7 @@
 			<key>cell</key>
 			<string>PSSwitchCell</string>
 			<key>default</key>
-			<string>YES</string>
+			<true/>
 			<key>defaults</key>
 			<string>com.cyanisaac.brightifyprefs</string>
 			<key>id</key>
