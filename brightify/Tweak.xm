@@ -55,6 +55,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 @property(atomic,assign,readwrite) CGColorRef contentsMultiplyColor;
 @end
 
+@interface SPTActionButton: UIButton
+@property(readonly, nonatomic) NSInteger size;
+@end
 
 #define kBundlePath @"/Library/MobileSubstrate/DynamicLibraries/com.cyanisaac.brightify.bundle"
 #define kNoctisAppID CFSTR("com.laughingquoll.noctis")
@@ -431,6 +434,20 @@ static void killSpotifyForNoctis() {
       originalStyle = %orig;
       return originalStyle;
     }
+}
+
+%end
+
+%hook SPTActionButton
+
+-(void)applyThemeLayout {
+  %orig;
+
+  if ([BTFYMethods doColorSpotify]) {
+    if(self.size == 1) { // This means that the button is the smaller style in the header.
+      [self setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    }
+  }
 }
 
 %end
