@@ -1,3 +1,6 @@
+*This software is no longer in active development.
+Please contact me if you wish to maintain it.*
+
 # ![](http://i.imgur.com/at7WV7Q.png) | Brightify
 A Lighter Look for Spotify, inspired by Lightify | v0.3
 
@@ -25,13 +28,10 @@ check with ColorFlow's developer before submtting an issue here.*
 Tested on iPhone 6s, 10.2, yalu102 b7.
 
 ## Development Status
-This tweak's development is being paused as of 4/12/17; feel free to contribute
-code yourself, but updates will not be provided at the moment due to school projects
-and other responsibilities of mine.
-
-Any critical issues will be resolved.
-
-I intend to resume development June 2017.
+Development of this software has halted, as I am no longer jailbroken, and I
+do not intend to rejoin the jailbreak community. If you would like to pick
+up the code and maintain it, please let me know, as I would be happy to
+assist you.
 
 ## Reporting Issues
 If you find an issue with the tweak, please report issues using the Issues tab
